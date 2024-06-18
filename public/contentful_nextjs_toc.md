@@ -1,11 +1,11 @@
 ---
-title: Contentful & Next.jsでブログ記事の目次を作成する
+title: Next.js & Contentfulでブログの目次を実装する
 tags:
   - 'Contentful'
   - 'Next.js'
   - 'QiitaEngineerFesta'
   - 'QiitaEngineerFesta2024'
-private: false
+private: true
 updated_at: ''
 id: null
 organization_url_name: null
@@ -16,52 +16,56 @@ ignorePublish: false
 
 こんにちは。HRBrainでオウンドメディア・ランディングページの開発を担当している渡邉です。
 
-HRBrainでは、Next.js(TypeScript) & ContentfulなHeadless CMSでオウンドメディアを運営しています。
+HRBrainでは、Next.js(TypeScript) & Contentful なHeadless CMSでオウンドメディアを運営しています。
 
-Contentfulで入力したRich TextをNext.js側で取得し、目次を生成したので、その時の記録です。
+Contentfulで入力したRich TextデータをNext.js側からAPIで取得し、目次を作成してみました。
 
-## 
+![hruniv_toc.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/e3d14cfd-fb14-c041-89e3-d1db37c5336b.png)
 
-## ライブラリの追加
 
-最初に、実装で必要となるContentful関連のライブラリを2つインストールしておきます。
+## 手順
+
+- Contentfulに対してAPIを叩き、Rich Textデータを受け取る(本記事では省略)
+- 必要なライブラリの追加
+- Rich TextデータをHTMLに変換する
+- Rich Textデータから目次を生成する
+- コンポーネント側から呼び出す
+
+## 必要なライブラリの追加
+
+最初に、実装で必要となるContentful関連のライブラリを2つインストールします。
 
 ```
 npm install @contentful/rich-text-types @contentful/rich-text-react-renderer
 ```
 
-▼ContentfulのRich text用型ファイル
+▼ContentfulのRich Textデータ用型ファイル
 
 https://www.npmjs.com/package/@contentful/rich-text-types
 
-▼ContentfulのRich textをReactプロジェクト上で出力するためのライブラリ
+▼ContentfulのRich TextデータをReactコンポーネントに変換するライブラリ
 
 https://www.npmjs.com/package/@contentful/rich-text-react-renderer
 
-## 手順
+## Rich TextをHTMLに変換する
 
-- フロントエンドのNext.jsからContentfulに対してAPIを叩き、記事データ(Rich text)を受け取る
-- Rich textデータをHTMLに変換する
-
-## Rich textをHTMLに変換する
-
-ContentfulのRich textデータは、以下のような形式になっています。
+ContentfulのRich TextデータをAPIで取得すると、nodeの情報が配列で渡ってきます。
 
 ![img_richtext_data.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/c09d335d-adaa-5760-acc7-b2ab0bdedfe2.png)
 
-この配列状にまとまったnodeデータを`@contentful/rich-text-react-renderer`ライブラリの`documentToReactComponents`という関数を通すことにより、HTMLデータに変換することができます。
+このRich Textデータを`@contentful/rich-text-react-renderer`ライブラリの`documentToReactComponents`という関数を使って、HTMLに変換します。
 
-目次クリックで該当箇所までページ内リンクでジャンプできるよう、`#heading-1` `#heading-2`という形式でID属性を付与しています。
+また、目次の項目をクリックした際にページ内リンクでジャンプできるよう、h2タグに対して`#heading-1` `#heading-2`という形式でID属性を付与しています。
 
-```tsx:richText.tsx
-import { BLOCKS } from '@contentful/rich-text-types'
+```tsx:articleBody.tsx
+import { BLOCKS, Document } from '@contentful/rich-text-types'
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
 
 type Props = {
   document: Document
 }
 
-export default function RichText({ document }: Props): React.ReactElement {
+export default function ArticleBody({ document }: Props): React.ReactElement {
   let headingIndex = 0
 
   const options = {
@@ -77,9 +81,16 @@ export default function RichText({ document }: Props): React.ReactElement {
 }
 ```
 
-## Rich text形式の記事データから目次を生成する
+## Rich Textから目次を生成する
+
+Propsの`document`でRich Textが渡ってくるので、データを整形してulタグとして出力します。
+
+- Rich Textからh2タグ(`heading-2`)をfilterで取得
+- mapでループを回してデータを整形する
+- アンカーリンクはページ内リンクになるよう、ID属性へのリンクを付与
+
 ```tsx:tableOfContents.tsx
-import { BLOCKS, Document } from '@contentful/rich-text-types'
+import { Text, Document } from '@contentful/rich-text-types'
 
 type Props = {
   document: Document
@@ -89,9 +100,9 @@ export default function TableOfContents({ document }: Props): React.ReactElement
   const headings = document.content
     .filter((content) => content.nodeType === 'heading-2')
     .map((content, index) => (
-      {
+      return {
         id: `heading-${++index}`,
-        text: content.content[0].value,
+        text: (content.content[0] as Text).value,
       }
     ))
 
@@ -108,21 +119,32 @@ export default function TableOfContents({ document }: Props): React.ReactElement
 ```
 
 ## 記事側で各コンポーネントを呼び出す
+
+必要な箇所で目次と記事本文を呼び出します。
+
+以下のコードは、例として目次の後に本文が配置されるようにしています。
+
 ```tsx:Article.tsx
 import TableOfContents from '@/components/TableOfContents'
-import RichText from '@/components/RichText'
+import ArticleBody from '@/components/ArticleBody'
 
 export default function Article({ post }: Props): React.ReactElement {
   return (
     <article>
-      <TableOfContents document={post.fields.main_text} />
-      <RichText document={post.fields.main_text} />
+      <TableOfContents document={post.fields.rich_text} />
+      <ArticleBody document={post.fields.rich_text} />
     </article>
   )
 }
 ```
 
-## ページ内リンクジャンプ後に見出しがheaderに隠れる場合
+## おまけ: ページ内リンクジャンプ後に見出しがheaderに隠れる場合
+
+ページ内リンクでジャンプした後、見出しがheaderと重なってしまっていることってありますよね。
+
+イケてないこの事象を解決するには、遷移先の見出しに対して`scroll-margin-top`プロパティを指定しましょう。
+
+こうするだけで、いい感じの位置にズレた状態で見出しにジャンプすることができます。
 
 ```css
 h2 {
@@ -131,3 +153,9 @@ h2 {
 ```
 
 ![img_scroll_margin.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/818d16d7-bcaa-6e5c-e6de-da311f0b4ff3.png)
+
+## PR
+
+HRBrainでは一緒に働く仲間を募集しています。歴史に残るトライをしよう！
+
+https://www.hrbrain.co.jp/recruit
