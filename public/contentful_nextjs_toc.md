@@ -1,13 +1,13 @@
 ---
-title: Next.js & Contentfulでブログの目次を実装する
+title: Next.js + Contentfulでブログの目次を実装する
 tags:
-  - 'Contentful'
-  - 'Next.js'
-  - 'QiitaEngineerFesta'
-  - 'QiitaEngineerFesta2024'
+  - Next.js
+  - contentful
+  - QiitaEngineerFesta
+  - QiitaEngineerFesta2024
 private: true
-updated_at: ''
-id: null
+updated_at: '2024-06-19T11:53:10+09:00'
+id: 6bea0188e6e574cb2e2b
 organization_url_name: null
 slide: false
 ignorePublish: false
@@ -18,22 +18,22 @@ ignorePublish: false
 
 HRBrainでは、Next.js(TypeScript) & Contentful なHeadless CMSでオウンドメディアを運営しています。
 
-Contentfulで入力したRich TextデータをNext.js側からAPIで取得し、目次を作成してみました。
+Contentfulで入力したRich TextデータをNext.js側からAPI経由で取得し、目次を作成しました。
 
 ![hruniv_toc.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/e3d14cfd-fb14-c041-89e3-d1db37c5336b.png)
 
 
 ## 手順
 
-- Contentfulに対してAPIを叩き、Rich Textデータを受け取る(本記事では省略)
-- 必要なライブラリの追加
-- Rich TextデータをHTMLに変換する
-- Rich Textデータから目次を生成する
+- ContentfulのAPIを使用してRich Textデータを取得(本記事では具体的なAPIリクエストは省略します)
+- 必要なライブラリを追加
+- Rich TextデータをHTMLに変換
+- Rich Textデータから目次を生成
 - コンポーネント側から呼び出す
 
 ## 必要なライブラリの追加
 
-最初に、実装で必要となるContentful関連のライブラリを2つインストールします。
+最初に、実装で必要となるContentful関連のライブラリをインストールします。
 
 ```
 npm install @contentful/rich-text-types @contentful/rich-text-react-renderer
@@ -47,15 +47,15 @@ https://www.npmjs.com/package/@contentful/rich-text-types
 
 https://www.npmjs.com/package/@contentful/rich-text-react-renderer
 
-## Rich TextをHTMLに変換する
+## Rich TextをHTMLに変換
 
-ContentfulのRich TextデータをAPIで取得すると、nodeの情報が配列で渡ってきます。
+Contentfulから取得したRich Textデータは、以下のようにnodeデータが配列で提供されます。
 
 ![img_richtext_data.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/c09d335d-adaa-5760-acc7-b2ab0bdedfe2.png)
 
-このRich Textデータを`@contentful/rich-text-react-renderer`ライブラリの`documentToReactComponents`という関数を使って、HTMLに変換します。
+このRich Textデータを`@contentful/rich-text-react-renderer`ライブラリの`documentToReactComponents`関数を使用してHTMLに変換します。
 
-また、目次の項目をクリックした際にページ内リンクでジャンプできるよう、h2タグに対して`#heading-1` `#heading-2`という形式でID属性を付与しています。
+また、目次の項目をクリックした際にページ内リンクでジャンプできるように、h2タグに対して`#heading-1` `#heading-2`という形式のID属性を付与します。
 
 ```tsx:articleBody.tsx
 import { BLOCKS, Document } from '@contentful/rich-text-types'
@@ -81,13 +81,13 @@ export default function ArticleBody({ document }: Props): React.ReactElement {
 }
 ```
 
-## Rich Textから目次を生成する
+## Rich Textから目次を生成
 
-Propsの`document`でRich Textが渡ってくるので、データを整形してulタグとして出力します。
+Propsの`document`にRich Textが渡されるので、このデータを整形してulタグとして出力します。
 
 - Rich Textからh2タグ(`heading-2`)をfilterで取得
-- mapでループを回してデータを整形する
-- アンカーリンクはページ内リンクになるよう、ID属性へのリンクを付与
+- mapを使用してデータを整形
+- アンカーリンクはページ内リンクになるように、ID属性へのリンクを付与
 
 ```tsx:tableOfContents.tsx
 import { Text, Document } from '@contentful/rich-text-types'
@@ -99,12 +99,10 @@ type Props = {
 export default function TableOfContents({ document }: Props): React.ReactElement {
   const headings = document.content
     .filter((content) => content.nodeType === 'heading-2')
-    .map((content, index) => (
-      return {
+    .map((content, index) => ({
         id: `heading-${++index}`,
         text: (content.content[0] as Text).value,
-      }
-    ))
+    }))
 
   return (
     <ul>
@@ -122,11 +120,19 @@ export default function TableOfContents({ document }: Props): React.ReactElement
 
 必要な箇所で目次と記事本文を呼び出します。
 
-以下のコードは、例として目次の後に本文が配置されるようにしています。
+以下の例では、目次の後に記事本文が配置されるようにしています。
 
 ```tsx:Article.tsx
 import TableOfContents from '@/components/TableOfContents'
 import ArticleBody from '@/components/ArticleBody'
+
+type Props = {
+  post: {
+    fields: {
+      rich_text: Document
+    }
+  }
+}
 
 export default function Article({ post }: Props): React.ReactElement {
   return (
@@ -140,11 +146,11 @@ export default function Article({ post }: Props): React.ReactElement {
 
 ## おまけ: ページ内リンクジャンプ後に見出しがheaderに隠れる場合
 
-ページ内リンクでジャンプした後、見出しがheaderと重なってしまっていることってありますよね。
+ページ内リンクでジャンプした後、見出しがheaderと重なる問題が発生する場合があります。
 
-イケてないこの事象を解決するには、遷移先の見出しに対して`scroll-margin-top`プロパティを指定しましょう。
+これを解決するために、遷移先の見出しに対して`scroll-margin-top`プロパティを指定します。
 
-こうするだけで、いい感じの位置にズレた状態で見出しにジャンプすることができます。
+指定した値だけ、ズレた状態で見出しにジャンプすることができます。
 
 ```css
 h2 {
@@ -153,6 +159,10 @@ h2 {
 ```
 
 ![img_scroll_margin.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/818d16d7-bcaa-6e5c-e6de-da311f0b4ff3.png)
+
+ContentfulからRich Textデータを取得し、目次を生成するまでの順序を説明しました。
+
+実装する際の参考にしてください。
 
 ## PR
 
