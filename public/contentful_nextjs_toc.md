@@ -6,7 +6,7 @@ tags:
   - QiitaEngineerFesta
   - QiitaEngineerFesta2024
 private: true
-updated_at: '2024-06-19T11:53:10+09:00'
+updated_at: '2024-06-20T12:09:36+09:00'
 id: 6bea0188e6e574cb2e2b
 organization_url_name: null
 slide: false
@@ -16,16 +16,16 @@ ignorePublish: false
 
 こんにちは。HRBrainでオウンドメディア・ランディングページの開発を担当している渡邉です。
 
-HRBrainでは、Next.js(TypeScript) & Contentful なHeadless CMSでオウンドメディアを運営しています。
+HRBrainでは、Next.js（TypeScript）とContentfulというHeadless CMSを使ってオウンドメディアを運営しています。
 
-Contentfulで入力したRich TextデータをNext.js側からAPI経由で取得し、目次を作成しました。
+本記事では、Contentfulに入力したRich TextデータをNext.js側からAPI経由で取得し、目次を作成する方法をご紹介します。
 
 ![hruniv_toc.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/e3d14cfd-fb14-c041-89e3-d1db37c5336b.png)
 
 
 ## 手順
 
-- ContentfulのAPIを使用してRich Textデータを取得(本記事では具体的なAPIリクエストは省略します)
+- ContentfulのAPIを使用してRich Textデータを取得（本記事では具体的なAPIリクエストは省略します）
 - 必要なライブラリを追加
 - Rich TextデータをHTMLに変換
 - Rich Textデータから目次を生成
@@ -85,7 +85,7 @@ export default function ArticleBody({ document }: Props): React.ReactElement {
 
 Propsの`document`にRich Textが渡されるので、このデータを整形してulタグとして出力します。
 
-- Rich Textからh2タグ(`heading-2`)をfilterで取得
+- Rich Textからh2タグ（`heading-2`）をfilterで取得
 - mapを使用してデータを整形
 - アンカーリンクはページ内リンクになるように、ID属性へのリンクを付与
 
@@ -123,6 +123,7 @@ export default function TableOfContents({ document }: Props): React.ReactElement
 以下の例では、目次の後に記事本文が配置されるようにしています。
 
 ```tsx:Article.tsx
+import { Document } from '@contentful/rich-text-types'
 import TableOfContents from '@/components/TableOfContents'
 import ArticleBody from '@/components/ArticleBody'
 
