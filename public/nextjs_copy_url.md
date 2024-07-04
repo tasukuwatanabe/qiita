@@ -5,7 +5,7 @@ tags:
   - QiitaEngineerFesta
   - QiitaEngineerFesta2024
 private: true
-updated_at: '2024-07-04T10:47:01+09:00'
+updated_at: '2024-07-04T15:51:13+09:00'
 id: bb4c97da0891da3e3da9
 organization_url_name: null
 slide: false
@@ -41,10 +41,12 @@ const CopyUrlButton = () => {
   const [displayTooltip, setDisplayTooltip] = useState(false);
   const router = useRouter();
 
+  const currentUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${router.pathname}`
+
   const handleCopy = async () => {
     try {
       // 現在のURLをクリップボードにコピー
-      await navigator.clipboard.writeText(router.asPath);
+      await navigator.clipboard.writeText(currentUrl);
 
       setDisplayTooltip(true);
       setTimeout(() => {
