@@ -4,10 +4,10 @@ tags:
   - Next.js
   - QiitaEngineerFesta
   - QiitaEngineerFesta2024
-private: true
-updated_at: '2024-07-04T15:51:13+09:00'
+private: false
+updated_at: '2024-07-20T10:10:00+09:00'
 id: bb4c97da0891da3e3da9
-organization_url_name: null
+organization_url_name: hrbrain
 slide: false
 ignorePublish: false
 ---
@@ -153,6 +153,8 @@ Next.jsプロジェクトにURLコピーボタンを実装することができ�
 
 ## PR
 
-HRBrainでは一緒に働く仲間を募集しています。歴史に残るトライをしよう！
+HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっています。
+
+https://hrmos.co/pages/hrbrain/jobs/2110310
 
 https://www.hrbrain.co.jp/recruit

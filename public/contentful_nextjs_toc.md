@@ -5,10 +5,10 @@ tags:
   - contentful
   - QiitaEngineerFesta
   - QiitaEngineerFesta2024
-private: true
-updated_at: '2024-06-20T12:09:36+09:00'
+private: false
+updated_at: '2024-07-20T10:10:01+09:00'
 id: 6bea0188e6e574cb2e2b
-organization_url_name: null
+organization_url_name: hrbrain
 slide: false
 ignorePublish: false
 ---
@@ -167,6 +167,8 @@ ContentfulからRich Textデータを取得し、目次を生成するまでの�
 
 ## PR
 
-HRBrainでは一緒に働く仲間を募集しています。歴史に残るトライをしよう！
+HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっています。
+
+https://hrmos.co/pages/hrbrain/jobs/2110310
 
 https://www.hrbrain.co.jp/recruit
