@@ -5,7 +5,7 @@ tags:
   - QiitaEngineerFesta
   - QiitaEngineerFesta2024
 private: false
-updated_at: '2024-07-20T10:10:00+09:00'
+updated_at: '2024-07-20T10:19:57+09:00'
 id: bb4c97da0891da3e3da9
 organization_url_name: hrbrain
 slide: false
