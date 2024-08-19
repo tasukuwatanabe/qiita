@@ -1,108 +1,143 @@
 ---
-title: SVGに対してCSSのcolor指定で色が変わらない時の解決策
+title: SVGの色が変わらない？CSSで色を操作する方法
 tags:
   - HTML
   - CSS
   - SVG
-private: true
-updated_at: '2024-08-15T23:45:06+09:00'
+private: false
+updated_at: '2024-08-19T11:13:08+09:00'
 id: 99ba6476d550edfead08
-organization_url_name: null
+organization_url_name: hrbrain
 slide: false
 ignorePublish: false
 ---
 
 ## はじめに
 
-SVGは、ベクター形式の画像データで、拡大縮小しても画質が劣化しないため、Webサイトで頻繁に使用されています。
+こんにちは。HRBrainでオウンドメディア・ランディングページの開発を担当している渡邉です。
 
-SVGに色を指定する際には、fill属性を使用しますが、CSSから色を変更しようとした際に、なかなか色が変わらなくてハマりかけました。
+先日、SVGの色をCSSで変更しようとした際に、なかなか色が変わらなくて困ってしまいました。
 
-この記事では、その解決策をご紹介します。
+この記事では、SVGの色がCSSで変更できない場合の原因と、2つの解決策をわかりやすく解説します。
 
-## CSSのfillプロパティが効かない問題
+## SVGの色を変更できない原因
 
-以下のように`#000`などのカラーコードを直接fill属性に記述した場合、CSSのcolorプロパティで色を変更しても、`#000`で上書きされてしまい、図形の色が変わりません。
+fill属性に直接色が指定されていると、その色が固定されてしまい、CSSのcolorプロパティによる変更が適用されなくなります。
 
 ```html
-<div class="square">
+<div class="parent">
   <svg>
     <rect width="100" height="100" fill="#000" />
   </svg>
 </div>
 
 <style>
-  .square {
+  .parent {
     color: red; // 効きません
   }
 </style>
 ```
 
-<p class="codepen" data-height="350" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="vYqpXOo" data-pen-title="Untitled" data-editable="true" data-user="tasukuwatanabe" style="height: 350px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="vYqpXOo" data-pen-title="svg_fill_bad" data-editable="true" data-user="tasukuwatanabe" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
   <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/vYqpXOo">
-  Untitled</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
+  svg_fill_bad</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
   on <a href="https://codepen.io">CodePen</a>.</span>
 </p>
 
-これは、fill属性に直接色を指定することで、その色が固定されてしまい、CSSのcolorプロパティによる変更が適用されなくなるためです。
-
-## 解決策：fill属性に対してcurrentColorを指定する
+## 解決策1：fill属性にcurrentColorを指定する
 
 この問題を解決するには、fill属性に`currentColor`という値を指定します。
 
-`currentColor`は、SVGのfill属性やstroke属性に指定できる特別な値で、**要素の親要素のcolorプロパティで設定された色を継承します。**
+`currentColor`は、SVGのfill属性やstroke属性に指定できる特別な値で、**親要素のcolorプロパティに設定された色を継承します。**
 
-例えば、以下のように親要素に`color: red;`を指定した場合、SVGの`rect`要素は赤色になります。
+https://developer.mozilla.org/ja/docs/Web/SVG/Attribute/color
+
+<br>
+
+例えば、以下のように親要素に`color: red;`を指定した場合、SVGのrect要素は赤色になります。
 
 ```html
-<div class="square">
+<div class="parent">
   <svg>
     <rect width="100" height="100" fill="currentColor" />
   </svg>
 </div>
 
 <style>
-  .square {
+  .parent {
     color: red;
   }
 </style>
 ```
 
-<p class="codepen" data-height="350" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="WNqdGGp" data-pen-title="Untitled" data-editable="true" data-user="tasukuwatanabe" style="height: 350px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="WNqdGGp" data-pen-title="Untitled" data-editable="true" data-user="tasukuwatanabe" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
   <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/WNqdGGp">
   Untitled</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
   on <a href="https://codepen.io">CodePen</a>.</span>
 </p>
 
-### currentColorの挙動
+### currentColorを指定して色操作する利点
 
-`currentColor`は、要素の親要素のcolorプロパティの色を継承します。
+CSSのcolorプロパティでSVGの色を操作する利点として、併用するテキストなどと一緒に色操作が行える点です。
 
-ただし、親要素にcolorプロパティが指定されていない場合は、ブラウザがデフォルトで設定している色が使用されます。
+SVGのアイコンは以下のようにテキストと一緒に使うケースが少なくありません。
 
-https://developer.mozilla.org/ja/docs/Web/SVG/Attribute/color
+そのような場合に、親要素でcolorプロパティを設定することで、子要素の色を連動して操作することができます。
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="yLdpzyR" data-pen-title="svg_in_button" data-editable="true" data-user="tasukuwatanabe" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/yLdpzyR">
+  svg_in_button</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+
+## 解決策2：CSSのfillプロパティで色を指定する
+
+CSSのfillプロパティで色を指定する方法もあります。
+
+```html
+<svg>
+  <rect width="100" height="100" />
+</svg>
+
+<style>
+  svg rect {
+    fill: red;
+  }
+</style>
+```
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="rNEpGoV" data-pen-title="Untitled" data-editable="true" data-user="tasukuwatanabe" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/rNEpGoV">
+  Untitled</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
 
 <br>
 
-また、`currentColor`は、fill属性だけでなく、stroke属性にも使用できます。
+以前は頻繁にfillプロパティを使ってSVGの色指定をしていたのですが、`fill="currentColor"`の存在を知ってからは、あまり使わなくなりました。
 
-<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="jOjYMyL" data-pen-title="Untitled" data-editable="true" data-user="tasukuwatanabe" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
-  <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/jOjYMyL">
+この指定方法は、SVG内の個々の要素に異なる色を設定したい場合などに適しています。
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html,result" data-slug-hash="OJezjeg" data-pen-title="Untitled" data-editable="true" data-user="tasukuwatanabe" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/OJezjeg">
   Untitled</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
   on <a href="https://codepen.io">CodePen</a>.</span>
 </p>
 
 ## まとめ
 
-CSSのcolorプロパティを変えてもSVGの色が変わらない場合は、fill属性に`currentColor`を指定してみてください。
+SVGの色をCSSで操作する場合、以下のような方法が挙げられます。
 
-`currentColor`は、親要素のcolorプロパティの色を継承するため、CSSで柔軟に色を変更することができます。
+- `fill="currentColor"`を指定してcolorプロパティで操作する方法
+- CSSのfillプロパティで色を操作する方法
 
-SVGは色々な属性があるため複雑に感じるかもしれませんが、実際に使って、その便利さを実感してみてください。
+特に、currentColorは親要素のcolorプロパティの色を継承するため、テキストと連動して色を変更することができ、非常に便利です。
+
+SVGは色々な属性があるため複雑に感じるかもしれませんが、実際に使ってみて、その便利さを実感してみてください。
 
 ## PR
 
-HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっています。
+HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているので、ぜひ！
 
 https://hrmos.co/pages/hrbrain/jobs/2110310
 
