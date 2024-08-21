@@ -16,32 +16,11 @@ ignorePublish: false
 
 こんにちは。HRBrainでオウンドメディア・ランディングページの開発を担当している渡邉です。
 
-ウェブサイト内にiframeでMarketoやSalesforce Account Engagementなどのフォームをiframe埋め込みで設置している場合、iframe内のinputタグに入力された値をGTMに対して渡すには、iframe内（子）からサイト側（親）に対してユーザーの入力した値を送る必要があります。
+MarketoやSalesforceなどのMA製フォームをウェブサイトにiframeで埋め込むケースがよくあります。
 
-しかし、iframe内の要素はクロスドメインなので、eventListenerやstateでのデータ受け渡しができません。
+## iframeから埋め込みサイトにフォーム入力値を渡す
 
-そこで、window.postMessageメソッドを利用することで、iframe間でのデータ通信を実現することができます。
-
-## eventListenerでのイベント操作はiframeだとできない
-
-iframeは、親ページとは異なるドメインで動作することが多いため、通常のイベントリスナーではiframe内の要素にアクセスできません。
-
-例えば、iframe内のボタンをクリックした際に親ページの要素を操作しようとすると、セキュリティ上の理由から動作しません。
-
-```javascript
-// iframe内のボタンをクリックした際に親ページの要素を操作しようとする例
-const iframe = document.getElementById('myIframe');
-const button = iframe.contentWindow.document.getElementById('myButton');
-
-button.addEventListener('click', () => {
-  // 親ページの要素を操作しようとするとエラーが発生する
-  document.getElementById('myElement').style.backgroundColor = 'red';
-});
-```
-
-## 子から親にデータを渡したいときにはwindow.postMessage()を使う
-
-iframe内（子）から親ページにデータを渡すには、window.postMessage()メソッドを使用します。
+iframe側（子）からサイト側（親）に対してフォーム入力値を送る場合、JavaScriptのwindow.postMessage()を使用します。
 
 window.postMessage()メソッドは、iframeの親ページに対してメッセージを送信する際に使用します。
 
@@ -59,6 +38,23 @@ form.addEventListener('submit', (event) => {
 
   // 親ページにメッセージを送信
   window.parent.postMessage({ formData }, '*'); // '*'はすべてのドメインを許可する
+});
+```
+
+### eventListenerでのイベント操作はiframeだとできない
+
+iframeは、親ページとは異なるドメインで動作することが多いため、通常のイベントリスナーではiframe内の要素にアクセスできません。
+
+例えば、iframe内のボタンをクリックした際に親ページの要素を操作しようとすると、セキュリティ上の理由から動作しません。
+
+```javascript
+// iframe内のボタンをクリックした際に親ページの要素を操作しようとする例
+const iframe = document.getElementById('myIframe');
+const button = iframe.contentWindow.document.getElementById('myButton');
+
+button.addEventListener('click', () => {
+  // 親ページの要素を操作しようとするとエラーが発生する
+  document.getElementById('myElement').style.backgroundColor = 'red';
 });
 ```
 
