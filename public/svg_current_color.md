@@ -5,7 +5,7 @@ tags:
   - CSS
   - SVG
 private: false
-updated_at: '2024-08-19T11:13:08+09:00'
+updated_at: '2024-08-19T11:13:22+09:00'
 id: 99ba6476d550edfead08
 organization_url_name: hrbrain
 slide: false
