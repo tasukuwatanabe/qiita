@@ -1,10 +1,10 @@
 ---
-title: 画像ファイルをリネームする際は `git mv` を使おう
+title: ファイルのリネームがgitで差分認識されない？git mvを使おう
 tags:
-  - 'git'
+  - Git
 private: true
-updated_at: ''
-id: null
+updated_at: '2024-08-23T18:35:34+09:00'
+id: 3f7324c0b33fe5584f89
 organization_url_name: null
 slide: false
 ignorePublish: false
@@ -14,61 +14,89 @@ ignorePublish: false
 
 こんにちは。HRBrainでオウンドメディア・ランディングページの開発を担当している渡邉です。
 
-Gitを使用していると、ファイル名の変更が思い通りに認識されないことがあります。
+先日、ファイル名を変更した際に、変更が差分としてGitに認識されないということがありました。
 
-特に、画像ファイルの名前を大文字や小文字で変更する際、この問題はしばしば発生します。
+この記事では、Gitが差分を見逃す原因と、その対処法について解説しています。
 
-この記事では、実際に経験した具体的なケースを元に、Gitでファイル名を変更する際の適切な対処方法について詳しく説明します。
+## ファイル名の大文字と小文字を変更するケース
 
-## 問題発生のケース：`hoge.jpg` を `HOGE.jpg` にリネーム
+Gitプロジェクトの中で、`filerename.txt` を `fileRename.txt` にリネームしてみました。
 
-プロジェクトの中で、画像ファイル `hoge.jpg` を `HOGE.jpg` に名前を変えました。
-
-しかし、ローカル環境ではファイル名が変更されていたにもかかわらず、Gitのステージングエリアにはその変更が反映されていませんでした。
-
-このため、リポジトリ上でもファイル名の変更が記録されず、期待通りの結果が得られませんでした。
-
-## なぜGitがリネームを見逃すのか？
-
-Gitは通常、ファイル名の変更を「削除」と「新規作成」として扱います。
-
-しかし、特定のファイルシステム設定やファイル名の変更内容によっては、Gitがリネームを認識しない場合があります。
-
-- **ケースセンシティブなファイルシステム**：大文字・小文字の違いを正確に区別します。
-- **ケースインセンシティブなファイルシステム**：大文字・小文字を区別せず、同一視します。
-
-たとえば、WindowsやmacOSで使用されるHFS+はケースインセンシティブなファイルシステムです。
-
-そのため、`hoge.jpg` から `HOGE.jpg` への変更を行っても、Gitはその違いを認識せず、変更があったとはみなしません。
-
-## 解決方法： `git mv` を利用する
-
-この問題を避けるための最も簡単な方法は、ファイルをリネームする際に `git mv` コマンドを使うことです。
+しかし、ローカル環境ではファイル名が変更されていたにもかかわらず、Gitのステージングエリアにはその変更が反映されていません。
 
 ```bash
-git mv -f hoge.jpg HOGE.jpg
+$ mv filerename.txt fileRename.txt
+$ ls
+fileRename.txt
+$ git status
+On branch main
+nothing to commit, working tree clean
+```
+
+### なぜGitがリネームを見逃すのか？
+
+それぞれのOSには何かしらのファイルシステムが使用されていますが、ファイルシステムの種類によっては、Gitがリネームを認識しない場合があります。
+
+たとえば、MacOSで使用されているAPFS（※）やHFS+というファイルシステムがありますが、これは**ケースインセンシティブ**であり、大文字・小文字を区別しません。
+
+※ 設定によりケースセンシティブへの変更が可能ですが、ここでは割愛します。
+
+参考：[Macのディスクユーティリティで利用できるファイルシステムフォーマット - Apple サポート (日本)](https://support.apple.com/ja-jp/guide/disk-utility/dsku19ed921c/mac)
+
+## 解決方法1： `git mv` を利用する
+
+この問題を避けるには、ファイルをリネームする際に `git mv` コマンドを使うことです。
+
+```bash
+git mv filerename.txt fileRename.txt
 ```
 
 このコマンドを使うことで、Gitはファイルのリネームを正しく認識し、差分として記録します。
 
-## 解決方法2: 
+```bash
+$ git mv filerename.txt fileRename.txt
+$ git status
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	renamed:    filerename.txt -> fileRename.txt
+```
+
+参考：[Git - git-mv Documentation](https://git-scm.com/docs/git-mv)
+
+## 解決方法2: git configの設定変更
 
 ```bash
 git config core.ignorecase false
 ```
 
+このコマンドは、Gitがファイル名の大文字・小文字を区別するように設定を変更します。
+
+```bash
+$ mv filerename.txt fileRename.txt
+$ gst
+On branch main
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	fileRename.txt
+```
+
+この設定により、リネームが検知されるようになります。
+
+ただし、リポジトリ内に`text.txt`と`Text.txt`などのようなファイルが共存する場合には、競合が発生する可能性があります。
+
+また、プロジェクトのメンバー同士で設定を統一するなど、チーム全体での統一が必要になります。
+
+参考：[Git - git-config Documentation](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreignoreCase)
+
 ## まとめ
 
-ファイル名を変更するだけの単純な操作でも、Gitの動作やファイルシステムの違いによって予期しない問題が発生することがあります。
+ファイル名を変更するだけの単純な操作でも、ファイルシステムの違いによって差分として検出されないことがあります。
 
-特に、ファイル名の大文字・小文字を変更する場合は、`git mv` コマンドを使用することで、確実にリネームをGitに認識させることができます。
-
-この手法を用いることで、Gitによるバージョン管理がスムーズに行えるようになります。
+ファイル名の大文字・小文字を変更する場合は、`git mv` コマンドを使用することで、確実にリネームをGitに認識させることができます。
 
 ## PR
 
-HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているので、ぜひ！
+HRBrainでは一緒に働く仲間を募集しています。歴史に残るトライをしよう！
 
-https://hrmos.co/pages/hrbrain/jobs/2110310
-
-https://hrmos.co/pages/hrbrain/jobs/23020910
+https://www.hrbrain.co.jp/recruit
