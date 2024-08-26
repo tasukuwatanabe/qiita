@@ -20,9 +20,7 @@ MarketoやSalesforceなどのMA製フォームをウェブサイトにiframeで�
 
 ## iframeから埋め込みサイトにフォーム入力値を渡す
 
-iframe側（子）からサイト側（親）に対してフォーム入力値を送る場合、JavaScriptのwindow.postMessage()を使用します。
-
-window.postMessage()メソッドは、iframeの親ページに対してメッセージを送信する際に使用します。
+iframe側（子）からサイト側（親）に対してフォーム入力値を送る場合、JavaScriptの`window.postMessage()`を使用します。
 
 ```javascript
 // iframe内（子）のコード
@@ -78,7 +76,7 @@ window.addEventListener('message', (event) => {
 
 ## window.postMessage() メソッドについて
 
-window.postMessage() メソッドは、iframeを含む異なるオリジンのウィンドウ間でメッセージを送信するために使用されます。
+`window.postMessage()` メソッドは、iframeを含む異なるオリジンのウィンドウ間でメッセージを送信するために使用されます。
 
 これは、ブラウザのセキュリティ制限である「同一オリジンポリシー」を回避するために設計されています。
 
@@ -109,9 +107,10 @@ window.addEventListener('message', (event) => {
 
 ### ターゲットオリジンの指定
 
-window.postMessage() メソッドの第2引数には、メッセージを受け取るウィンドウのオリジンを指定します。
+`window.postMessage()` メソッドの第2引数には、メッセージを受け取るウィンドウのオリジンを指定します。
 
 '*'：すべてのドメインを許可します。セキュリティ上のリスクがあるため、可能な限り使用は避けましょう。
+
 'https://example.com'：特定のドメインのみを許可します。
 
 ```javascript
@@ -126,7 +125,9 @@ window.addEventListener('message', (event) => {
 });
 ```
 
-上記の例では、iframe内から親ページにメッセージを送信する際に、ターゲットオリジンを 'https://example.com' に指定しています。親ページでは、event.origin プロパティを使用して、メッセージの送信元を確認しています。
+上記の例では、iframe内から親ページにメッセージを送信する際に、ターゲットオリジンを `https://example.com` に指定しています。
+
+親ページでは、`event.origin` プロパティを使用して、メッセージの送信元を確認しています。
 
 ## バリデーションは送信ボタンを押した時にDOMのエラーメッセージの有無で判断する
 
@@ -157,7 +158,7 @@ form.addEventListener('submit', (event) => {
 
 ## dataLayer.push()でGTMに対して子から受け取った値を送る
 
-親ページでmessageイベントリスナーで受け取ったデータは、dataLayer.push()メソッドを使用してGTMに送信することができます。
+親ページでmessageイベントリスナーで受け取ったデータは、`dataLayer.push()` メソッドを使用してGTMに送信することができます。
 
 ```javascript
 // 親ページのコード
@@ -176,7 +177,7 @@ window.addEventListener('message', (event) => {
 
 iframe埋め込みをした親子間でpostMessageメソッドを使ってデータをやり取りする方法について解説しました。
 
-`window.postMessage()`メソッドを使用することで、iframe間でのデータ通信を実現し、GTMなどのツールにデータを送信することができます。
+`window.postMessage()` メソッドを使用することで、iframe間でのデータ通信を実現し、GTMなどのツールにデータを送信することができます。
 
 セキュリティ上のリスクを考慮し、適切なドメインを指定して使用しましょう。
 
