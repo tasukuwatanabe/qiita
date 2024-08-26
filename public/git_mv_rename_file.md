@@ -2,10 +2,10 @@
 title: ファイルのリネームがgitで差分認識されない？git mvを使おう
 tags:
   - Git
-private: true
-updated_at: '2024-08-23T18:35:34+09:00'
+private: false
+updated_at: '2024-08-25T14:27:46+09:00'
 id: 3f7324c0b33fe5584f89
-organization_url_name: null
+organization_url_name: hrbrain
 slide: false
 ignorePublish: false
 ---
@@ -74,7 +74,7 @@ git config core.ignorecase false
 
 ```bash
 $ mv filerename.txt fileRename.txt
-$ gst
+$ git status
 On branch main
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
