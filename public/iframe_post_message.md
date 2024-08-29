@@ -1,5 +1,5 @@
 ---
-title: iframe埋め込みをした親子間でpostMessageメソッドを使ってデータをやり取りする
+title: iframeを使った親子間のデータのやり取り方法
 tags:
   - 'javascript'
   - 'iframe'
@@ -14,39 +14,22 @@ ignorePublish: false
 
 ## はじめに
 
-こんにちは。HRBrainでオウンドメディア・ランディングページの開発を担当している渡邉です。
+こんにちは。HRBrainでオウンドメディアやランディングページの開発を担当している渡邉です。
 
-MarketoやSalesforceなどのMA製フォームをウェブサイトにiframeで埋め込むケースがよくあります。
+ウェブサイトにMarketoやSalesforceなどのツールのフォームをiframeで埋め込むことがありますよね。
 
-## iframeから埋め込みサイトにフォーム入力値を渡す
+例えば、iframe内で入力された値を親サイトに送り、GTMに渡してマーケティングに活用する、といったケースです。
 
-iframe側（子）からサイト側（親）に対してフォーム入力値を送る場合、JavaScriptの`window.postMessage()`を使用します。
+この記事では、そんなときに使える、iframeから親サイトにデータを渡す方法についてお話しします。
 
-```javascript
-// iframe内（子）のコード
-const form = document.getElementById('myForm');
+## iframe内の要素はイベントリスナーでは操作できない
 
-form.addEventListener('submit', (event) => {
-  event.preventDefault(); // フォームのデフォルト動作をキャンセル
+iframeは、親ページとは異なるドメインで動作することがよくあります。そのため、通常のイベントリスナーを使っても、iframe内の要素にはアクセスできません。
 
-  const formData = {
-    name: document.getElementById('name').value,
-    email: document.getElementById('email').value,
-  };
-
-  // 親ページにメッセージを送信
-  window.parent.postMessage({ formData }, '*'); // '*'はすべてのドメインを許可する
-});
-```
-
-### eventListenerでのイベント操作はiframeだとできない
-
-iframeは、親ページとは異なるドメインで動作することが多いため、通常のイベントリスナーではiframe内の要素にアクセスできません。
-
-例えば、iframe内のボタンをクリックした際に親ページの要素を操作しようとすると、セキュリティ上の理由から動作しません。
+例えば、iframe内のボタンをクリックしたときに、親ページの要素を操作しようとすると、セキュリティ上の理由でエラーが発生します。
 
 ```javascript
-// iframe内のボタンをクリックした際に親ページの要素を操作しようとする例
+// iframe内のボタンをクリックしたときに親ページの要素を操作しようとする例
 const iframe = document.getElementById('myIframe');
 const button = iframe.contentWindow.document.getElementById('myButton');
 
@@ -56,17 +39,42 @@ button.addEventListener('click', () => {
 });
 ```
 
-## 親側ではmessageイベントを使ってデータを受け取る
+## window.postMessage()でデータを渡す
 
-親ページでは、messageイベントリスナーを使用して、iframeから送信されたメッセージを受け取ります。
+iframe内のフォームのデータを親ページに送るときは、`window.postMessage()` を使います。
+
+このメソッドを使えば、異なるドメイン間でもデータを送ることができます。
+
+```javascript
+// iframe内のコード
+const form = document.getElementById('myForm');
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault(); // フォームのデフォルト動作をキャンセル
+
+  const formData = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+  };
+
+  // 親ページにデータを送信
+  window.parent.postMessage({ formData }, '*'); // '*'はすべてのドメインを許可する
+});
+```
+
+## 親ページでデータを受け取る
+
+親ページでは、messageイベントリスナーを使って、iframeから送信されたデータを受け取ります。
 
 ```javascript
 // 親ページのコード
 window.addEventListener('message', (event) => {
   const formData = event.data.formData;
-  console.log(formData); // 子から受け取ったデータを親側でコンソールに出力する
+  
+  // コンソールにデータを表示
+  console.log(formData);
 
-  // GTMにデータを送信
+  // 必要に応じて、GTMにデータを送信する処理など
   dataLayer.push({
     event: 'formSubmit',
     formData: formData,
@@ -74,28 +82,25 @@ window.addEventListener('message', (event) => {
 });
 ```
 
-## window.postMessage() メソッドについて
+## window.postMessage()の使い方
 
-`window.postMessage()` メソッドは、iframeを含む異なるオリジンのウィンドウ間でメッセージを送信するために使用されます。
+`window.postMessage()` は、異なるオリジン（ドメイン）のwindow間でメッセージを送信するために使います。
 
-これは、ブラウザのセキュリティ制限である「同一オリジンポリシー」を回避するために設計されています。
+これによって、通常の「同一オリジンポリシー」というセキュリティ制限を回避できます。
 
-### 同一オリジンポリシーとは
+### 同一オリジンポリシーとは？
 
-同一オリジンポリシーとは、異なるドメインのスクリプトが、別のドメインのページのコンテンツにアクセスすることを制限するセキュリティ対策です。
+同一オリジンポリシーは、異なるドメインのスクリプトが別のドメインのページのコンテンツにアクセスするのを防ぐためのセキュリティ対策です。
 
-例えば、`https://example.com` のページから `https://another.com` のページのコンテンツにアクセスしようとすると、同一オリジンポリシーによってアクセスが制限されます。
+例えば、`https://child.site` から `https://parent.site` のページにアクセスしようとすると、同一オリジンポリシーによってブロックされます。
 
-### window.postMessage() メソッドの使用方法
+### window.postMessage()の使い方
 
-window.postMessage() メソッドは、以下の2つの引数を取ります。
-
-メッセージデータ: 送信するメッセージデータ。文字列、数値、オブジェクトなど、任意のデータ型を指定できます。
-ターゲットオリジン: メッセージを受け取るウィンドウのオリジン。
+`window.postMessage()` は、メッセージデータとターゲットオリジン（メッセージを受け取るドメイン）という2つの引数を取ります。
 
 ```javascript
-// iframe内（子）のコード
-window.parent.postMessage('Hello from iframe!', '*'); // '*'はすべてのドメインを許可する
+// iframe内のコード
+window.parent.postMessage('Hello from iframe!', '*'); // '*'はすべてのドメインを許可
 
 // 親ページのコード
 window.addEventListener('message', (event) => {
@@ -103,88 +108,34 @@ window.addEventListener('message', (event) => {
 });
 ```
 
-上記の例では、iframe内から親ページに 'Hello from iframe!' というメッセージを送信しています。
-
 ### ターゲットオリジンの指定
 
-`window.postMessage()` メソッドの第2引数には、メッセージを受け取るウィンドウのオリジンを指定します。
+第2引数には、メッセージを受け取るwindowのオリジンを指定します。
 
-'*'：すべてのドメインを許可します。セキュリティ上のリスクがあるため、可能な限り使用は避けましょう。
+- `*`：すべてのドメインを許可します。ただし、セキュリティリスクがあるので、できるだけ避けましょう。
 
-'https://example.com'：特定のドメインのみを許可します。
+- `https://child.site`：特定のドメインだけを許可します。
 
 ```javascript
-// iframe内（子）のコード
-window.parent.postMessage('Hello from iframe!', 'https://example.com'); // 特定のドメインのみを許可
+// iframe内のコード
+window.parent.postMessage('Hello from iframe!', 'https://parent.site'); // 特定のドメインを許可
 
 // 親ページのコード
 window.addEventListener('message', (event) => {
-  if (event.origin === 'https://example.com') {
+  if (event.origin === 'https://child.site') {
     console.log(event.data); // 'Hello from iframe!' が出力される
   }
 });
 ```
 
-上記の例では、iframe内から親ページにメッセージを送信する際に、ターゲットオリジンを `https://example.com` に指定しています。
-
-親ページでは、`event.origin` プロパティを使用して、メッセージの送信元を確認しています。
-
-## バリデーションは送信ボタンを押した時にDOMのエラーメッセージの有無で判断する
-
-フォームのバリデーションは、送信ボタンを押した際にDOMのエラーメッセージの有無で判断することができます。
-
-```javascript
-// iframe内（子）のコード
-const form = document.getElementById('myForm');
-
-form.addEventListener('submit', (event) => {
-  event.preventDefault(); // フォームのデフォルト動作をキャンセル
-
-  // バリデーションチェック
-  if (document.getElementById('name').value === '') {
-    // エラーメッセージを表示
-    document.getElementById('nameError').textContent = '名前を入力してください';
-    return;
-  }
-
-  // バリデーションが成功した場合、親ページにメッセージを送信
-  const formData = {
-    name: document.getElementById('name').value,
-    email: document.getElementById('email').value,
-  };
-  window.parent.postMessage({ formData }, '*');
-});
-```
-
-## dataLayer.push()でGTMに対して子から受け取った値を送る
-
-親ページでmessageイベントリスナーで受け取ったデータは、`dataLayer.push()` メソッドを使用してGTMに送信することができます。
-
-```javascript
-// 親ページのコード
-window.addEventListener('message', (event) => {
-  const formData = event.data.formData;
-
-  // GTMにデータを送信
-  dataLayer.push({
-    event: 'formSubmit',
-    formData: formData,
-  });
-});
-```
-
 ## まとめ
 
-iframe埋め込みをした親子間でpostMessageメソッドを使ってデータをやり取りする方法について解説しました。
+この記事では、`postMessage` メソッドを使ってiframe内のデータを親ページに送信する方法について解説しました。
 
-`window.postMessage()` メソッドを使用することで、iframe間でのデータ通信を実現し、GTMなどのツールにデータを送信することができます。
-
-セキュリティ上のリスクを考慮し、適切なドメインを指定して使用しましょう。
+このメソッドを使うと、異なるドメイン間でも安全にデータをやり取りできます。
 
 ## PR
 
 HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているので、ぜひ！
 
 https://hrmos.co/pages/hrbrain/jobs/2110310
-
-https://hrmos.co/pages/hrbrain/jobs/23020910
