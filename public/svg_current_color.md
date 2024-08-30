@@ -5,7 +5,7 @@ tags:
   - CSS
   - SVG
 private: false
-updated_at: '2024-08-19T11:13:22+09:00'
+updated_at: '2024-08-30T18:30:32+09:00'
 id: 99ba6476d550edfead08
 organization_url_name: hrbrain
 slide: false
@@ -141,6 +141,6 @@ HRBrainではコミュニケーションデザインエンジニア（ウェブ�
 
 https://hrmos.co/pages/hrbrain/jobs/2110310
 
-https://hrmos.co/pages/hrbrain/jobs/23020910
+https://www.hrbrain.co.jp/recruit
 
 <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
