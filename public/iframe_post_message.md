@@ -1,12 +1,12 @@
 ---
-title: iframeを使った親子間のデータのやり取り方法
+title: クロスオリジンでiframeから親サイトにpostMessageでデータを渡す
 tags:
-  - 'javascript'
-  - 'iframe'
-  - 'GoogleTagManager'
+  - JavaScript
+  - iframe
+  - GoogleTagManager
 private: true
-updated_at: ''
-id: null
+updated_at: '2024-08-30T18:51:53+09:00'
+id: 4774c9a8ef73363f52b9
 organization_url_name: null
 slide: false
 ignorePublish: false
@@ -16,65 +16,96 @@ ignorePublish: false
 
 こんにちは。HRBrainでオウンドメディアやランディングページの開発を担当している渡邉です。
 
-ウェブサイトにMarketoやSalesforceなどのツールのフォームをiframeで埋め込むことがありますよね。
+SalesforceなどのMAツール製のiframeフォームをウェブサイトに埋め込むことがあります。
 
-例えば、iframe内で入力された値を親サイトに送り、GTMに渡してマーケティングに活用する、といったケースです。
+この記事では、ウェブサイトとiframeが異なるドメインの場合に、iframeからウェブサイトにデータを受け渡す方法について解説しています。
 
-この記事では、そんなときに使える、iframeから親サイトにデータを渡す方法についてお話しします。
+▼ [HRBrainサービスサイト](https://www.hrbrain.jp/)におけるiframeフォームの事例
 
-## iframe内の要素はイベントリスナーでは操作できない
+![iframe_form.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/acd843cf-63ce-53b2-d9f2-daddb30efa19.png)
 
-iframeは、親ページとは異なるドメインで動作することがよくあります。そのため、通常のイベントリスナーを使っても、iframe内の要素にはアクセスできません。
+## クロスオリジンでのiframe操作の制限
 
-例えば、iframe内のボタンをクリックしたときに、親ページの要素を操作しようとすると、セキュリティ上の理由でエラーが発生します。
+iframeとウェブサイトが異なるドメインに存在している場合、ウェブサイトからiframe内の要素に直接アクセスすることができません。
 
-```javascript
-// iframe内のボタンをクリックしたときに親ページの要素を操作しようとする例
+- ウェブサイトのURL： `hoge.com` 
+- iframeのURL： `fuga.com`
+
+これは、「同一オリジンポリシー」により、セキュリティの観点から、オリジンが異なるページへのアクセスは制限を受けるためです。（クロスオリジン）
+
+https://developer.mozilla.org/ja/docs/Web/Security/Same-origin_policy
+
+たとえば、iframe内のボタンをウェブサイトから操作しようとすると、以下のようなエラーが発生します。
+
+```javascript:ウェブサイト側：hoge.com
 const iframe = document.getElementById('myIframe');
-const button = iframe.contentWindow.document.getElementById('myButton');
 
-button.addEventListener('click', () => {
-  // 親ページの要素を操作しようとするとエラーが発生する
-  document.getElementById('myElement').style.backgroundColor = 'red';
+// iframe内のbutton要素にはウェブサイトからアクセスが許可されない
+iframe.contentWindow.document.getElementById('myButton'); // error
+
+// Error: 
+// Failed to read a named property 'document' from 'Window': 
+// Blocked a frame with origin "http://hoge.com" from accessing a cross-origin frame.
+```
+
+このエラーは、iframeがクロスオリジンのため、ウェブサイトからiframe内のDOMにアクセスできないことを示しています。
+
+## postMessageメソッドについて
+
+クロスオリジンでデータを送信するには、postMessageメソッドメソッドを使用します。
+
+このメソッドは、異なるドメイン間で安全にデータをやり取りするための手段です。
+
+https://developer.mozilla.org/ja/docs/Web/API/Window/postMessage
+
+### postMessageメソッドの使い方
+
+postMessageメソッドの第1引数にはウェブサイト側に渡すデータを、第2引数にはターゲットオリジン（メッセージを受け取るドメイン）を渡します。
+
+```javascript:iframe側：fuga.com
+window.parent.postMessage('Hello from iframe!', 'hoge.com');
+```
+```javascript:ウェブサイト側：hoge.com
+window.addEventListener('message', (event) => {
+  console.log(event.data); // 'Hello from iframe!' が出力される
 });
 ```
 
-## window.postMessage()でデータを渡す
+### ターゲットオリジンの指定
+postMessageメソッドでは、メッセージを送信するターゲットオリジンを第2引数に指定できます。
 
-iframe内のフォームのデータを親ページに送るときは、`window.postMessage()` を使います。
+- `*`：すべてのドメインを許可しますが、セキュリティリスクがあるため、特定のオリジンを指定することを推奨します。
 
-このメソッドを使えば、異なるドメイン間でもデータを送ることができます。
+- `https://hoge.com`：特定のドメインを指定することで、信頼できるドメインだけがメッセージを受信できようになります。
 
-```javascript
-// iframe内のコード
+### iframeから受け取ったデータをGTMに渡す事例
+
+ウェブサイトでは、`message` イベントリスナーを使用して、iframeから送信されたデータを受け取ります。
+
+さらに、iframeから受け取ったデータをdataLayerを使ってGTMに渡すことで、マーケティング施策の幅が広がります。
+
+```javascript:iframe側：fuga.com
 const form = document.getElementById('myForm');
 
 form.addEventListener('submit', (event) => {
-  event.preventDefault(); // フォームのデフォルト動作をキャンセル
-
+  // フォームから入力された値を取得してオブジェクトにまとめる
   const formData = {
-    name: document.getElementById('name').value,
-    email: document.getElementById('email').value,
+    name: document.getElementById('name').value, // ユーザー名
+    email: document.getElementById('email').value, // メールアドレス
   };
 
-  // 親ページにデータを送信
-  window.parent.postMessage({ formData }, '*'); // '*'はすべてのドメインを許可する
+  // ウェブサイトにデータを送信
+  window.parent.postMessage({ formData }, 'https://hoge.com');
 });
 ```
-
-## 親ページでデータを受け取る
-
-親ページでは、messageイベントリスナーを使って、iframeから送信されたデータを受け取ります。
-
-```javascript
-// 親ページのコード
+```javascript:ウェブサイト側：hoge.com
 window.addEventListener('message', (event) => {
-  const formData = event.data.formData;
-  
-  // コンソールにデータを表示
-  console.log(formData);
+  // 送信元のオリジンを確認
+  if (event.origin !== 'https://fuga.com') return; // 信頼できるオリジンのみ処理する
 
-  // 必要に応じて、GTMにデータを送信する処理など
+  const formData = event.data.formData;
+
+  // 必要に応じて、GTMにデータを送信
   dataLayer.push({
     event: 'formSubmit',
     formData: formData,
@@ -82,60 +113,16 @@ window.addEventListener('message', (event) => {
 });
 ```
 
-## window.postMessage()の使い方
-
-`window.postMessage()` は、異なるオリジン（ドメイン）のwindow間でメッセージを送信するために使います。
-
-これによって、通常の「同一オリジンポリシー」というセキュリティ制限を回避できます。
-
-### 同一オリジンポリシーとは？
-
-同一オリジンポリシーは、異なるドメインのスクリプトが別のドメインのページのコンテンツにアクセスするのを防ぐためのセキュリティ対策です。
-
-例えば、`https://child.site` から `https://parent.site` のページにアクセスしようとすると、同一オリジンポリシーによってブロックされます。
-
-### window.postMessage()の使い方
-
-`window.postMessage()` は、メッセージデータとターゲットオリジン（メッセージを受け取るドメイン）という2つの引数を取ります。
-
-```javascript
-// iframe内のコード
-window.parent.postMessage('Hello from iframe!', '*'); // '*'はすべてのドメインを許可
-
-// 親ページのコード
-window.addEventListener('message', (event) => {
-  console.log(event.data); // 'Hello from iframe!' が出力される
-});
-```
-
-### ターゲットオリジンの指定
-
-第2引数には、メッセージを受け取るwindowのオリジンを指定します。
-
-- `*`：すべてのドメインを許可します。ただし、セキュリティリスクがあるので、できるだけ避けましょう。
-
-- `https://child.site`：特定のドメインだけを許可します。
-
-```javascript
-// iframe内のコード
-window.parent.postMessage('Hello from iframe!', 'https://parent.site'); // 特定のドメインを許可
-
-// 親ページのコード
-window.addEventListener('message', (event) => {
-  if (event.origin === 'https://child.site') {
-    console.log(event.data); // 'Hello from iframe!' が出力される
-  }
-});
-```
-
 ## まとめ
 
-この記事では、`postMessage` メソッドを使ってiframe内のデータを親ページに送信する方法について解説しました。
+この記事では、postMessageメソッドを使って、クロスオリジンのiframeからウェブサイトにデータを送信する方法を解説しました。
 
-このメソッドを使うと、異なるドメイン間でも安全にデータをやり取りできます。
+postMessageメソッドを活用すれば、異なるドメイン間でも安全にデータをやり取りすることが可能です。
 
 ## PR
 
 HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているので、ぜひ！
 
 https://hrmos.co/pages/hrbrain/jobs/2110310
+
+https://www.hrbrain.co.jp/recruit
