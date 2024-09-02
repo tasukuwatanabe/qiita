@@ -1,13 +1,13 @@
 ---
-title: クロスオリジンでiframeから親サイトにpostMessageでデータを渡す
+title: postMessageを使ってクロスオリジンなiframeからデータを受け取る
 tags:
   - JavaScript
   - iframe
   - GoogleTagManager
-private: true
-updated_at: '2024-08-30T18:51:53+09:00'
+private: false
+updated_at: '2024-09-02T10:02:55+09:00'
 id: 4774c9a8ef73363f52b9
-organization_url_name: null
+organization_url_name: hrbrain
 slide: false
 ignorePublish: false
 ---
@@ -28,8 +28,8 @@ SalesforceなどのMAツール製のiframeフォームをウェブサイトに�
 
 iframeとウェブサイトが異なるドメインに存在している場合、ウェブサイトからiframe内の要素に直接アクセスすることができません。
 
-- ウェブサイトのURL： `hoge.com` 
-- iframeのURL： `fuga.com`
+- ウェブサイトのURL： `example.com` 
+- iframeのURL： `example.net`
 
 これは、「同一オリジンポリシー」により、セキュリティの観点から、オリジンが異なるページへのアクセスは制限を受けるためです。（クロスオリジン）
 
@@ -37,7 +37,7 @@ https://developer.mozilla.org/ja/docs/Web/Security/Same-origin_policy
 
 たとえば、iframe内のボタンをウェブサイトから操作しようとすると、以下のようなエラーが発生します。
 
-```javascript:ウェブサイト側：hoge.com
+```javascript:ウェブサイト側：example.com
 const iframe = document.getElementById('myIframe');
 
 // iframe内のbutton要素にはウェブサイトからアクセスが許可されない
@@ -45,14 +45,14 @@ iframe.contentWindow.document.getElementById('myButton'); // error
 
 // Error: 
 // Failed to read a named property 'document' from 'Window': 
-// Blocked a frame with origin "http://hoge.com" from accessing a cross-origin frame.
+// Blocked a frame with origin "http://example.com" from accessing a cross-origin frame.
 ```
 
 このエラーは、iframeがクロスオリジンのため、ウェブサイトからiframe内のDOMにアクセスできないことを示しています。
 
 ## postMessageメソッドについて
 
-クロスオリジンでデータを送信するには、postMessageメソッドメソッドを使用します。
+クロスオリジンでデータを送信するには、postMessageメソッドを使用します。
 
 このメソッドは、異なるドメイン間で安全にデータをやり取りするための手段です。
 
@@ -62,10 +62,10 @@ https://developer.mozilla.org/ja/docs/Web/API/Window/postMessage
 
 postMessageメソッドの第1引数にはウェブサイト側に渡すデータを、第2引数にはターゲットオリジン（メッセージを受け取るドメイン）を渡します。
 
-```javascript:iframe側：fuga.com
-window.parent.postMessage('Hello from iframe!', 'hoge.com');
+```javascript:iframe側：example.net
+window.parent.postMessage('Hello from iframe!', 'example.com');
 ```
-```javascript:ウェブサイト側：hoge.com
+```javascript:ウェブサイト側：example.com
 window.addEventListener('message', (event) => {
   console.log(event.data); // 'Hello from iframe!' が出力される
 });
@@ -76,7 +76,7 @@ postMessageメソッドでは、メッセージを送信するターゲットオ
 
 - `*`：すべてのドメインを許可しますが、セキュリティリスクがあるため、特定のオリジンを指定することを推奨します。
 
-- `https://hoge.com`：特定のドメインを指定することで、信頼できるドメインだけがメッセージを受信できようになります。
+- `https://example.com`：特定のドメインを指定することで、信頼できるドメインだけがメッセージを受信できようになります。
 
 ### iframeから受け取ったデータをGTMに渡す事例
 
@@ -84,7 +84,7 @@ postMessageメソッドでは、メッセージを送信するターゲットオ
 
 さらに、iframeから受け取ったデータをdataLayerを使ってGTMに渡すことで、マーケティング施策の幅が広がります。
 
-```javascript:iframe側：fuga.com
+```javascript:iframe側：example.net
 const form = document.getElementById('myForm');
 
 form.addEventListener('submit', (event) => {
@@ -95,13 +95,13 @@ form.addEventListener('submit', (event) => {
   };
 
   // ウェブサイトにデータを送信
-  window.parent.postMessage({ formData }, 'https://hoge.com');
+  window.parent.postMessage({ formData }, 'https://example.com');
 });
 ```
-```javascript:ウェブサイト側：hoge.com
+```javascript:ウェブサイト側：example.com
 window.addEventListener('message', (event) => {
   // 送信元のオリジンを確認
-  if (event.origin !== 'https://fuga.com') return; // 信頼できるオリジンのみ処理する
+  if (event.origin !== 'https://example.net') return; // 信頼できるオリジンのみ処理する
 
   const formData = event.data.formData;
 
