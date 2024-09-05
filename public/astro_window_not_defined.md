@@ -1,12 +1,12 @@
 ---
-title: Astroで「window is not defined」エラーを解消する方法
+title: astroで window is not defined エラーを解消する方法
 tags:
-  - "Astro"
-  - "React"
-  - "Vue"
+  - Vue.js
+  - React
+  - astro
 private: true
-updated_at: ""
-id: null
+updated_at: '2024-09-05T18:02:56+09:00'
+id: 44f6ad50efeae40267cd
 organization_url_name: null
 slide: false
 ignorePublish: false
@@ -14,66 +14,69 @@ ignorePublish: false
 
 ## はじめに
 
-Astro は、静的サイト生成やサーバーレンダリングを簡単に行えるモダンなフレームワークです。
+こんにちは。HRBrainでオウンドメディアやランディングページの開発を担当している渡邉です。
 
-しかし、Astro を使って開発を進めると、「window is not defined」というエラーに遭遇することがあります。
+HRBrainでは、[サービスサイト](https://www.hrbrain.jp/)の開発にastroを採用しています。
 
-この記事では、このエラーの原因とその解消法について詳しく解説します。
+astroは、高速なウェブサイト構築を可能にするフレームワークであり、サーバーサイドレンダリング（SSR）や静的サイト生成（SSG）を行うことができます。
 
-## 「window is not defined」の意味
+この記事では、astro開発で遭遇した `window is not defined` というエラーの解決策を分かりやすく解説します。
 
-「window is not defined」というエラーは、`window`オブジェクトがサーバーサイドでは存在しないために発生します。
+https://astro.build/
 
-`window`オブジェクトはブラウザ環境（クライアントサイド）でのみ利用可能であり、サーバーサイドでは存在しません。
+## astroはサーバーサイドで実行される
 
-そのため、サーバーサイドで実行されるコードで`window`を参照しようとすると、このエラーが発生します。
+astroは、まずサーバーサイドでHTMLを生成し、それをブラウザに送信します。
 
-## Astro はサーバーサイドで実行される
+その後、ブラウザ上でJavaScriptが実行され、イベントリスナーの登録やコンポーネントの状態管理などを行います。
 
-Astro は、初期描画をサーバーサイドで行い、必要な部分のみクライアントサイドで再度レンダリング（ハイドレーション）します。
+これを「ハイドレーション」と呼びます。
 
-この仕組みにより、パフォーマンス向上や SEO の最適化が期待できますが、クライアントサイドに依存するコードがサーバーサイドで実行されるとエラーを引き起こす可能性があります。
 
-## 「window is not defined」の解消法
+## window is not defined エラーの原因
 
-### 1. クライアントサイド限定で`window`を使用する
+ブラウザには `window` というオブジェクトが用意されており、ブラウザのウィンドウに関する情報を持っています。
 
-クライアントサイドでのみ`window`を使用するために、`typeof window !== 'undefined'`を使って、`window`が存在する場合のみコードを実行するようにします。
+しかし、astroはサーバーサイドレンダリングを行うため、コードの一部はサーバー側で実行されます。
 
-```js
-if (typeof window !== "undefined") {
-  console.log(window.innerWidth);
-}
+サーバーにはブラウザのウィンドウは存在しないため、windowオブジェクトも存在しません。
+
+そのため、サーバー側で実行されるコードの中でwindowオブジェクトを使おうとすると、`window is not defined` エラーが発生します。
+
+## window is not defined エラーの解消
+
+以下のastroドキュメントにも記載されている方法ではありますが、コードを用いてより詳しく解説します。
+
+https://docs.astro.build/ja/guides/troubleshooting/#%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E5%8E%9F%E5%9B%A0
+
+### client:only ディレクティブを使う
+
+astroは、React、Vue、Svelteなど、様々なフレームワークとの連携（インテグレーション）をサポートしています。 
+
+`client:only` ディレクティブを使用することで、これらのフレームワークをクライアントサイドでのみ実行することができます。 
+
+例えば、以下のようにコンポーネントを `client:only` ディレクティブを使ってレンダリングすることができます。
+
+```astro:src/pages/index.astro
+<Component client:only="react" />   // React
+<Component client:only="vue" />     // Vue
+<Component client:only="svelte" />  // Svelte
 ```
+<br>
 
-ただし、この方法ではサーバーサイドでのエラーを回避することはできますが、クライアントサイドで再度この処理が実行されるわけではありません。
+https://docs.astro.build/ja/reference/directives-reference/#clientonly
 
-根本的な解決をするためには他の手法が必要です。
+#### client:only ディレクティブの効果
 
-### 2. Astro の`client:only`ディレクティブを使用する
+`client:only` ディレクティブを指定したコンポーネントは、そのコンポーネント自身だけでなく、そのコンポーネント内で使用されている子コンポーネントも、すべてクライアントサイドでのみ実行されるようになります。
 
-Astro では、特定のコンポーネントをクライアントサイドでのみレンダリングするために、`client:only`ディレクティブを使用します。
+例えば、以下のような構成の場合、`ParentComponent` と `ChildComponent` はどちらもクライアントサイドでのみ実行されます。
 
-これにより、サーバーサイドでは無視され、クライアントサイドでのみ実行されるようになります。
-
-```astro:main.astro
+```astro:src/pages/index.astro
 <ParentComponent client:only="react" />
 ```
 
-#### 子コンポーネントへの影響
-
-`client:only`ディレクティブを使用すると、指定された親コンポーネントはサーバーサイドではレンダリングされず、クライアントサイドでのみ実行されます。
-
-このとき、親コンポーネント内で使用している子コンポーネントも、クライアントサイドでレンダリングされます。
-
-次のような React コンポーネントの構成の場合、`ParentComponent`とその中に含まれる`ChildComponent`はクライアントサイドでのみ実行されます。
-
-```astro:main.astro
-<!-- ParentComponentをクライアントサイドでのみ実行 -->
-<ParentComponent client:only="react" />
-```
-
-```jsx:ParentComponent.jsx
+```jsx:src/components/ParentComponent.jsx
 import React from "react";
 import ChildComponent from "./ChildComponent";
 
@@ -89,7 +92,7 @@ function ParentComponent() {
 export default ParentComponent;
 ```
 
-```jsx:ChildComponent.jsx
+```jsx:src/components/ParentComponent.jsx
 import React from "react";
 
 function ChildComponent() {
@@ -99,69 +102,70 @@ function ChildComponent() {
 export default ChildComponent;
 ```
 
-この場合、`ParentComponent`と`ChildComponent`はどちらもサーバーサイドではレンダリングされず、クライアントサイドでのみ実行されます。
+### VueのonMountedやReactのuseEffectを使う
 
-### 3. Vue の`mounted`や React の`useEffect`を使って解消する方法
+クライアントサイドでのみ実行されるライフサイクルイベントを利用する方法もあります。
 
-もう一つの解決策として、クライアントサイドでのみ実行されるライフサイクルフックを利用する方法があります。
+Vue.jsでは `onMounted` 、Reactでは `useEffect` というライフサイクルイベントが用意されています。
 
-Vue の`mounted`フックや React の`useEffect`を使えば、サーバーサイドでのエラーを回避しつつ、クライアントサイドで`window`を安全に参照することができます。
+- `onMounted` は、コンポーネントがブラウザにマウントされた後に実行されます。
+- `useEffect` は、コンポーネントがブラウザにマウントされた後、そして必要に応じて更新後にも実行されます。
 
-#### Vue での解消方法 (`mounted`フック)
+これらのイベントを使うことで、サーバー側でのエラーを防ぎつつ、クライアントサイドでwindowオブジェクトを安全に利用することができます。
 
-Vue では、`mounted`ライフサイクルフックを使ってコンポーネントがクライアントサイドでレンダリングされた後に`window`を参照できます。
+#### Vueでの例 (onMountedフック)
 
 ```vue
+<script setup>
+import { ref, onMounted } from 'vue'
+
+// ref()を使ってリアクティブな変数 currentPath を作成
+const currentPath = ref(null)
+
+onMounted(() => {
+  // ref()で作成した変数の値を更新するには .value を使用
+  currentPath.value = window.location.pathname;
+})
+</script>
+
 <template>
   <div>
-    {{ windowWidth }}
+    現在のパス: {{ currentPath }}
   </div>
 </template>
-
-<script>
-export default {
-  data() {
-    return {
-      windowWidth: 0,
-    };
-  },
-  mounted() {
-    // クライアントサイドでのみwindowを参照
-    this.windowWidth = window.innerWidth;
-  },
-};
-</script>
 ```
 
-#### React での解消方法 (`useEffect`フック)
-
-React では、`useEffect`フックを使ってクライアントサイドでのみ実行される処理を記述します。
-
-これにより、サーバーサイドでのエラーを防ぎ、クライアントサイドで`window`を使用できます。
+#### Reactでの例 (useEffectフック)
 
 ```jsx
 import React, { useState, useEffect } from "react";
 
-function WindowWidthComponent() {
-  const [windowWidth, setWindowWidth] = useState(0);
+function CurrentPathComponent() {
+  const [currentPath, setCurrentPath] = useState(null);
 
   useEffect(() => {
-    // クライアントサイドでのみwindowを参照
-    setWindowWidth(window.innerWidth);
+    setCurrentPath(window.location.pathname);
   }, []);
 
-  return <div>{windowWidth}</div>;
+  return <div>現在のパス: {currentPath}</div>;
 }
 
-export default WindowWidthComponent;
+export default CurrentPathComponent;
 ```
 
 ## まとめ
 
-Astro で「window is not defined」というエラーが発生するのは、サーバーサイドで`window`オブジェクトが存在しないためです。
+astroで `window is not defined` というエラーが発生する原因は、サーバーサイドで windowオブジェクトが存在しないためです。
 
-この問題を解決するためには、クライアントサイドでのみ`window`オブジェクトを参照する必要があります。
+以下のいずれかの方法で解消することができます。
 
-解決策として、`client:only`ディレクティブを使用してクライアントサイドでのみコンポーネントを実行するか、Vue の`mounted`や React の`useEffect`を利用して、クライアントサイドでのみ`window`を参照する方法があります。
+- `client:only` ディレクティブを使って、コンポーネントをクライアントサイドでのみ実行する
+- Vue.jsの `onMounted` やReact `useEffect` を使って、コンポーネントがクライアントサイドでマウントされた後にwindowオブジェクトにアクセスする
 
-特に、`client:only`を使用すると親コンポーネントと子コンポーネントの両方がクライアントサイドでのみ実行され、サーバーサイドでのエラーを完全に回避できます。
+## PR
+
+HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているので、ぜひ！
+
+https://hrmos.co/pages/hrbrain/jobs/2110310
+
+https://www.hrbrain.co.jp/recruit
