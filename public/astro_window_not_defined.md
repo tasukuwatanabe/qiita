@@ -1,13 +1,13 @@
 ---
-title: astroで window is not defined エラーを解消する方法
+title: Astroで window is not defined エラーを解消する方法
 tags:
   - Vue.js
   - React
   - astro
-private: true
-updated_at: '2024-09-05T18:02:56+09:00'
+private: false
+updated_at: '2024-09-06T12:51:39+09:00'
 id: 44f6ad50efeae40267cd
-organization_url_name: null
+organization_url_name: hrbrain
 slide: false
 ignorePublish: false
 ---
@@ -16,17 +16,17 @@ ignorePublish: false
 
 こんにちは。HRBrainでオウンドメディアやランディングページの開発を担当している渡邉です。
 
-HRBrainでは、[サービスサイト](https://www.hrbrain.jp/)の開発にastroを採用しています。
+HRBrainでは、[サービスサイト](https://www.hrbrain.jp/)の開発にAstroを採用しています。
 
-astroは、高速なウェブサイト構築を可能にするフレームワークであり、サーバーサイドレンダリング（SSR）や静的サイト生成（SSG）を行うことができます。
+Astroは、高速なウェブサイト構築を可能にするフレームワークであり、サーバーサイドレンダリング（SSR）や静的サイト生成（SSG）を行うことができます。
 
-この記事では、astro開発で遭遇した `window is not defined` というエラーの解決策を分かりやすく解説します。
+この記事では、Astro開発で遭遇した `window is not defined` というエラーの解決策を分かりやすく解説します。
 
 https://astro.build/
 
-## astroはサーバーサイドで実行される
+## Astroはサーバーサイドで実行される
 
-astroは、まずサーバーサイドでHTMLを生成し、それをブラウザに送信します。
+Astroは、まずサーバーサイドでHTMLを生成し、それをブラウザに送信します。
 
 その後、ブラウザ上でJavaScriptが実行され、イベントリスナーの登録やコンポーネントの状態管理などを行います。
 
@@ -37,7 +37,7 @@ astroは、まずサーバーサイドでHTMLを生成し、それをブラウ�
 
 ブラウザには `window` というオブジェクトが用意されており、ブラウザのウィンドウに関する情報を持っています。
 
-しかし、astroはサーバーサイドレンダリングを行うため、コードの一部はサーバー側で実行されます。
+しかし、Astroはサーバーサイドレンダリングを行うため、コードの一部はサーバー側で実行されます。
 
 サーバーにはブラウザのウィンドウは存在しないため、windowオブジェクトも存在しません。
 
@@ -45,22 +45,22 @@ astroは、まずサーバーサイドでHTMLを生成し、それをブラウ�
 
 ## window is not defined エラーの解消
 
-以下のastroドキュメントにも記載されている方法ではありますが、コードを用いてより詳しく解説します。
+以下のAstroドキュメントにも記載されている方法ではありますが、コードを用いてより詳しく解説します。
 
 https://docs.astro.build/ja/guides/troubleshooting/#%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E5%8E%9F%E5%9B%A0
 
 ### client:only ディレクティブを使う
 
-astroは、React、Vue、Svelteなど、様々なフレームワークとの連携（インテグレーション）をサポートしています。 
+Astroは、React、Vue、Svelteなど、様々なフレームワークとの連携（インテグレーション）をサポートしています。 
 
 `client:only` ディレクティブを使用することで、これらのフレームワークをクライアントサイドでのみ実行することができます。 
 
 例えば、以下のようにコンポーネントを `client:only` ディレクティブを使ってレンダリングすることができます。
 
-```astro:src/pages/index.astro
-<Component client:only="react" />   // React
-<Component client:only="vue" />     // Vue
-<Component client:only="svelte" />  // Svelte
+```html:src/pages/index.astro
+<Component client:only="react" />   <!-- React -->
+<Component client:only="vue" />     <!-- Vue -->
+<Component client:only="svelte" />  <!-- Svelte -->
 ```
 <br>
 
@@ -72,7 +72,7 @@ https://docs.astro.build/ja/reference/directives-reference/#clientonly
 
 例えば、以下のような構成の場合、`ParentComponent` と `ChildComponent` はどちらもクライアントサイドでのみ実行されます。
 
-```astro:src/pages/index.astro
+```html:src/pages/index.astro
 <ParentComponent client:only="react" />
 ```
 
@@ -129,9 +129,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    現在のパス: {{ currentPath }}
-  </div>
+  <div>現在のパス: {{ currentPath }}</div>
 </template>
 ```
 
@@ -155,7 +153,7 @@ export default CurrentPathComponent;
 
 ## まとめ
 
-astroで `window is not defined` というエラーが発生する原因は、サーバーサイドで windowオブジェクトが存在しないためです。
+Astroで `window is not defined` というエラーが発生する原因は、サーバーサイドで windowオブジェクトが存在しないためです。
 
 以下のいずれかの方法で解消することができます。
 
