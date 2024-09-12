@@ -4,7 +4,7 @@ tags:
   - Security
   - Keeper
 private: false
-updated_at: '2024-09-11T18:16:31+09:00'
+updated_at: '2024-09-12T10:48:11+09:00'
 id: 5569398ed253db3a4f27
 organization_url_name: hrbrain
 slide: false
@@ -53,11 +53,11 @@ https://docs.keeper.io/jp/v/secrets-manager-jp/commander-cli/commander-installat
 
 <br>
 
-私の環境はmacOSなので、ここではmacOSでのインスール手順を紹介します。
+私の環境はmacOSなので、ここではmacOSでのインストール手順を紹介します。
 
 以下、インストールのためのコマンドです。
 
-まずはpip3コマンドがインスールされていることを確認します。
+まずはpip3コマンドがインストールされていることを確認します。
 
 ```bash
 $ pip3 --version
