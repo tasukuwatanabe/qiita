@@ -5,7 +5,7 @@ tags:
   - CSS
   - SVG
 private: false
-updated_at: '2024-08-30T18:30:32+09:00'
+updated_at: '2024-09-24T18:35:40+09:00'
 id: 99ba6476d550edfead08
 organization_url_name: hrbrain
 slide: false
@@ -137,7 +137,7 @@ SVGは色々な属性があるため複雑に感じるかもしれませんが�
 
 ## PR
 
-HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているので、ぜひ！
+HRBrainではフロントエンドエンジニア（コミュニケーションデザイン）の採用も行なっているので、ぜひ！
 
 https://hrmos.co/pages/hrbrain/jobs/2110310
 

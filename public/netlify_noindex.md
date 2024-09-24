@@ -3,7 +3,7 @@ title: NetlifyでPDFや画像をnoindexに設定する方法
 tags:
   - Netlify
 private: false
-updated_at: '2024-08-09T18:03:13+09:00'
+updated_at: '2024-09-24T18:35:40+09:00'
 id: 5c248645e245669e59a8
 organization_url_name: hrbrain
 slide: false
@@ -96,7 +96,7 @@ X-Robots-Tagというカスタムヘッダーを設定することで、Netlify�
 
 ## PR
 
-HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているのでぜひ！
+HRBrainではフロントエンドエンジニア（コミュニケーションデザイン）の採用も行なっているのでぜひ！
 
 https://hrmos.co/pages/hrbrain/jobs/2110310
 

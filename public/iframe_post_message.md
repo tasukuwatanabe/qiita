@@ -5,7 +5,7 @@ tags:
   - iframe
   - GoogleTagManager
 private: false
-updated_at: '2024-09-02T10:02:55+09:00'
+updated_at: '2024-09-24T18:35:40+09:00'
 id: 4774c9a8ef73363f52b9
 organization_url_name: hrbrain
 slide: false
@@ -121,7 +121,7 @@ postMessageメソッドを活用すれば、異なるドメイン間でも安全
 
 ## PR
 
-HRBrainではコミュニケーションデザインエンジニア（ウェブ制作/フロントエンド）の採用も行なっているので、ぜひ！
+HRBrainではフロントエンドエンジニア（コミュニケーションデザイン）の採用も行なっているので、ぜひ！
 
 https://hrmos.co/pages/hrbrain/jobs/2110310
 
