@@ -1,135 +1,88 @@
 ---
-title: 'position: stickyでヘッダーを固定して要素の重なりを防ぐ方法'
+title: '【CSS】position: sticky で固定ヘッダーを実装するメリットと実装例'
 tags:
   - 'HTML'
   - 'CSS'
-private: false
+private: true
 updated_at: ''
 id: null
 organization_url_name: null
 slide: false
-ignorePublish: false
+ignorePublish: true
 ---
 
 ## はじめに
 
-ウェブサイトにおけるナビゲーションバーやリンクバーの固定は、ユーザーがスクロールしても常にアクセス可能な位置に配置するための重要な手法です。
+こんにちは。HRBrainでオウンドメディア・ランディングページの開発を担当している渡邉です。
 
-しかし、これを実装する際に意図せぬレイアウト崩れが発生することがあります。
+Webサイト制作でよく使う固定ヘッダー。`position: fixed` で実装することが多いですが、他の要素と重なってしまう問題が発生することがあります。
 
-特に、position: fixedを使ってヘッダーやリンクバーを固定しようとした場合、後続するコンテンツがヘッダーの下に「潜り込む」問題に直面し、大規模な修正が必要になることもあります。
+そこで今回は、 `position: sticky` を使った固定ヘッダー実装と、そのメリットについて解説します。
 
-この記事では、私が実際にリンクバーをページ最上部に固定しようとしたときに、position: fixedの落とし穴に遭遇した体験を共有しつつ、position: stickyの優位性について説明します。
+https://developer.mozilla.org/ja/docs/Web/CSS/position
 
-## position: fixed で起きた問題
+## position: fixed の問題点
 
-position: fixedは、ビューポート（画面）に対して要素を固定する方法として非常にシンプルに見えますが、実際には以下のような問題が発生することがあります。
+`position: fixed` は、要素をビューポート（ブラウザの表示領域）に対して固定表示する際に便利なプロパティです。
 
-ヘッダーをposition: fixedで固定すると、他のページ要素がそのヘッダーの「下に潜り込む」現象が発生します。
+しかし、 `position: fixed` を使用すると、固定された要素が他の要素の上に重なって表示されてしまうため、レイアウトが崩れたり、コンテンツが隠れてしまうといった問題が発生する可能性があります。
 
-これを防ぐためには、ページ全体のレイアウトを大幅に修正しなければならず、大工事になることが多いです。
+例えば、以下のようなHTML構造とCSSスタイルシートを考えてみましょう。
 
-具体的には、ヘッダーの高さ分だけmarginやpaddingを調整して、後続する要素がヘッダーに重ならないようにする必要があります。
+<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="css,result" data-slug-hash="MWNWqMx" data-pen-title="Header position fixed" data-editable="true" data-user="tasukuwatanabe" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/MWNWqMx">
+  Header position fixed</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
 
+上記の例では、ヘッダーを画面上部に固定表示するために `position: fixed` を使用しています。
 
-```html
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fixed Header Issue</title>
-  <style>
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background-color: #333;
-      color: white;
-      padding: 15px;
-      z-index: 1000;
-    }
-    section {
-      padding: 20px;
-      height: 1500px;
-      background-color: lightgray;
-    }
-  </style>
-</head>
-<body>
-  <header>これは固定ヘッダーです</header>
-  <section>
-    <p>スクロールしてみてください。コンテンツがヘッダーの下に潜り込んでいます。</p>
-  </section>
-</body>
-</html>
-```
+しかし、ヘッダーが固定されたことにより、メインコンテンツがヘッダーの下に隠れてしまうため、 `margin-top` でコンテンツを下にずらす調整が必要になります。
 
-このコードでは、headerが画面上部に固定されていますが、後続するsection要素がヘッダーに隠れてしまっています。
+<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="css,result" data-slug-hash="mdNdzmp" data-pen-title="Header position fixed - margin" data-editable="true" data-user="tasukuwatanabe" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/mdNdzmp">
+  Header position fixed - margin</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
 
-margin-topなどで調整することは可能ですが、レスポンシブデザインを考慮する場合、各画面サイズごとに余白を設定する必要があり、非常に手間がかかります。
+この `margin-top` の値は、ヘッダーの高さに合わせて調整する必要があり、ヘッダーの高さが変更された場合は、 `margin-top` の値も変更する必要があり、メンテナンスが煩雑になる可能性があります。
 
-## position: sticky で問題解決
+例えば、以下のように、ページ最上部に他の要素を追加する場合なども、`margin-top` を再調整するきっかけになります。
 
-このような問題を解決するために、position: stickyを利用することを検討しました。
+![header_position_fixed_trouble.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/681000/0767d803-1a55-8319-2698-9e53a5cb40ab.png)
 
-position: stickyを使うことで、スクロール時にヘッダーが特定の位置に達したときだけ固定され、他の要素が自然にその位置を避けて配置されるため、後続する要素が潜り込む問題が発生しません。
+## position: sticky で実現する固定ヘッダー
 
-```html
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sticky Header Example</title>
-  <style>
-    header {
-      position: sticky;
-      top: 0;
-      background-color: #333;
-      color: white;
-      padding: 15px;
-      z-index: 1000;
-    }
-    section {
-      padding: 20px;
-      height: 1500px;
-      background-color: lightgray;
-    }
-  </style>
-</head>
-<body>
-  <header>これはStickyヘッダーです</header>
-  <section>
-    <p>スクロールしてみてください。Stickyヘッダーが自然に固定されます。</p>
-  </section>
-</body>
-</html>
-```
+`position: sticky` を使用すると、スクロール位置に応じて要素を固定するかどうかの挙動を制御できます。
 
-このコードでは、headerはposition: stickyを使用しています。
+初期状態では通常の要素と同じように配置されますが、スクロール位置が指定した閾値に達すると、その位置で固定表示されるようになります。
 
-ページをスクロールすると、ヘッダーが親要素内で指定した位置に達したときに固定され、後続するsection要素はヘッダーに隠れたり潜り込んだりすることなく正常に表示されます。
+`position: sticky` を使用することで、 `position: fixed` のように要素が他の要素の上に重なって表示されることを防ぎ、自然なスクロール動作を実現できます。
 
-## position: sticky のメリット
+先ほどのHTML構造を `position: sticky` を使用して書き換えてみましょう。
 
-position: stickyは、スクロールに応じて要素を特定の位置に固定するという挙動を実現しつつ、レイアウトの崩れを最小限に抑えることができるため、position: fixedよりも柔軟かつシンプルです。
+<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="css,result" data-slug-hash="abebRbz" data-pen-title="Header position sticky" data-user="tasukuwatanabe" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/tasukuwatanabe/pen/abebRbz">
+  Header position sticky</a> by Tasuku Watanabe (<a href="https://codepen.io/tasukuwatanabe">@tasukuwatanabe</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
 
-### メリット
+上記の例では、ヘッダーに `position: sticky` と `top: 0` を指定することで、ヘッダーが画面上部に固定表示されるようになります。
 
-レイアウト調整が不要: fixedのようにコンテンツが重なったり、潜り込んだりする問題が発生しません。後続要素とのレイアウト調整がほとんど不要です。
-親要素に依存した自然な挙動: 親要素の範囲内でのみ固定されるため、ビューポート全体を対象にしない分、意図しないレイアウト崩れが発生しにくいです。
-ブラウザ互換性: ほとんどのモダンブラウザでサポートされており、レガシーブラウザを除けば安定して動作します。
-
-### 落とし穴
-
-ただし、position: stickyにも注意点があります。以下のようなケースでは、うまく動作しないことがあります。
-
-親要素のoverflow設定: 親要素にoverflow: hiddenやoverflow: autoが指定されている場合、stickyは意図した通りに動作しません。このような場合は親要素のスタイルを確認し、必要に応じて修正する必要があります。
-古いブラウザ対応: Internet Explorerなどの古いブラウザでは、position: stickyはサポートされていないため、別の解決策が必要になります。
+`position: sticky` を使用することで、 `position: fixed` のようにコンテンツを下にずらすための `margin-top` の設定が不要になり、コードが簡潔になるだけでなく、レイアウトの崩れも防ぐことができます。
 
 ## まとめ
 
-position: fixedはシンプルに要素を固定できる一方、他の要素とのレイアウト調整が非常に手間になる場合があります。特に、隣接する要素がヘッダーやリンクバーの下に潜り込んでしまう問題は、stickyを使うことで回避できます。
+本記事では、 `position: sticky` を使用した固定ヘッダーの実装方法を紹介しました。
 
-position: stickyは親要素内でのみ固定されるため、スクロールに対して自然な動作を提供し、レイアウトの崩れを最小限に抑えることができる便利な手法です。新しいプロジェクトやリンクバーの実装時には、ぜひstickyを第一選択肢として検討してみてください。
+`position: sticky` は `position: fixed` よりも柔軟性があり、固定ヘッダーの実装に最適なので、ぜひ使ってみてください。
+
+## PR
+
+HRBrainではフロントエンドエンジニア（コミュニケーションデザイン）の採用も行なっているので、ぜひ！
+
+https://hrmos.co/pages/hrbrain/jobs/2110310
+
+https://www.hrbrain.co.jp/recruit
+
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
