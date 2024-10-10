@@ -4,10 +4,10 @@ tags:
   - ShellScript
   - Node.js
   - shell
-private: true
-updated_at: '2024-10-07T20:34:39+09:00'
+private: false
+updated_at: '2024-10-10T10:08:18+09:00'
 id: da8e71e3427c9febddc4
-organization_url_name: null
+organization_url_name: hrbrain
 slide: false
 ignorePublish: false
 ---
@@ -18,7 +18,7 @@ ignorePublish: false
 
 先日、終了コードを真偽値と誤認したことが原因で、ハマりかけました。
 
-終了コードは、プログラムが終了する際にOSに返す数値であり、その値によってプログラムの実行結果を表しています。
+終了コードは、プログラムが終了する際にOSへ返す数値であり、その値によってプログラムの実行結果を表しています。
 
 この記事では、終了コードの役割と、Node.jsでの具体的な活用例を解説します。
 
