@@ -95,9 +95,11 @@ error: externally-managed-environment
 
 そのため、指示にある通り、brewでpipxをインストールし、次にpipxコマンドを使ってKeeper Commanderをインストールしました。
 
+2024年11月現在、Python v3.13以上だとエラーになるため、v3.12をオプションで指定しています。
+
 ```bash
 $ brew install pipx
-$ pipx install keepercommander
+$ pipx install keepercommander --python python3.12
 
   installed package keepercommander 16.11.13, installed using Python 3.12.6
   These apps are now globally available
