@@ -1,14 +1,20 @@
 ---
 title: Astroでimportエイリアスを設定する方法
 tags:
-  - 'Astro'
+  - astro
+  - vite
+  - AdventCalendar2024
 private: true
-updated_at: ''
-id: null
-organization_url_name: hrbrain
+updated_at: '2024-12-06T15:45:43+09:00'
+id: a76f9100e6f9b3a1e3a1
+organization_url_name: null
 slide: false
 ignorePublish: false
 ---
+
+この記事はHRBrain Advent Calendar 2024 14日目の記事です。
+
+https://qiita.com/advent-calendar/2024/hrbrain
 
 ## はじめに
 
@@ -18,15 +24,17 @@ HRBrainでは、[サービスサイト](https://www.hrbrain.jp/)の開発にAstr
 
 Astroは、高速なウェブサイト構築を可能にするフレームワークであり、サーバーサイドレンダリング（SSR）や静的サイト生成（SSG）を行うことができます。
 
-この記事では、Astroプロジェクトでimportエイリアスを設定する方法について解説します。
+この記事では、Astroプロジェクトでimportエイリアスを設定する方法と、設定する中で遭遇した問題への対処法について解説します。
 
 https://docs.astro.build/ja/guides/imports/
 
 ## tsconfig.jsonでのエイリアス設定
 
-TypeScriptでimportエイリアスを使用するには、`tsconfig.json`を編集します。以下の設定例では、`@/*`形式のエイリアスを使用して、`src`ディレクトリ全体を対象にしています。
+TypeScriptでimportエイリアスを使用するには、`tsconfig.json`を編集します。
 
-```json:tsconfig.json
+以下の設定例では、`@/*`形式のエイリアスを使用して、`src`配下のディレクトリを対象にしています。
+
+```jsonc:tsconfig.json
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
@@ -38,62 +46,87 @@ TypeScriptでimportエイリアスを使用するには、`tsconfig.json`を編�
 }
 ```
 
-この設定により、src配下の任意のファイルを簡潔に参照できるようになります。
+`compilerOptions.baseUrl`が設定されていないと、エイリアスのパスが解決できないので注意して下さい。
 
-```tsx
+パスを`"src/*"`のように設定することで、`src`配下に新しいディレクトリが増える場合でも、新たにエイリアス設定を追加する必要がありません。
+
+```typescript:src/pages/index.astro
 // 相対パスを使用したimport
-import Button from "../../components/Button";
+import Button from '../../components/Button.astro';
+import companyLogo from '../../assets/images/logo.png';
+import someFunction from '../../utils/someFunction.ts';
 
 // エイリアスを使用したimport
-import Button from "@/components/Button";
+import Button from '@/components/Button.astro';
+import companyLogo from '@/assets/images/logo.png';
+import someFunction from '@/utils/someFunction.ts';
 ```
 
-## CSSでエイリアスを使用する
+### エイリアスに関する注意点
 
-CSSやSassでも同じエイリアスを使用するには、Astroの`astro.config.mjs`でViteのエイリアス設定を追加します。
+`@types`のように、スラッシュを挟まない形式でエイリアス設定をすると、TypeScriptがそれをnpmパッケージの`@types`と誤認識し、以下のようなエラーが発生する場合があります。
 
+```bash
+Cannot find module '@types/...' or its corresponding type declarations.
+```
+
+この問題を回避するために、エイリアス名を`@/`から始めるように設定しています。
+
+### CSSのurl()で発生するパス解決問題
+
+2024年12月時点では、前述した設定方法だと、CSSの`url()`で画像パスを指定する際にエイリアスが正しく解決されないというバグが潜んでいました。
+
+発生した環境は以下の通りです。
+
+- Astro：v4.5.5
+- Node：v20.17.0
+- Package Manager：Yarn
+
+https://github.com/withastro/astro/issues/9633
+
+例えば、以下のようにCSSでエイリアスを使用すると、ビルド時にパスが解決されずエラーになりました。
+
+```css
+.image {
+  background-image: url("@/images/example.png"); /* 解決されない */
+}
+```
+
+この問題に対しては、`astro.config.mjs`でViteのエイリアスを設定することで、CSS内の`url()`でもエイリアスが解決されるようになりました。
 
 ```javascript:astro.config.mjs
+import { fileURLToPath } from 'node:url' // 追加
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        '@/*': '/src/*',
+        '@/images': fileURLToPath(new URL('./src/assets/images', import.meta.url)) // 追加
       },
     },
   },
 });
 ```
 
-```scss
-@import "@/styles/variables.scss";
-
-.button {
-  color: $primary-color;
+```css
+.image {
+  background-image: url("@/images/example.png"); /* 解決される */
 }
 ```
 
-### エイリアスに関する注意点
+この問題はAstro本体に起因するものであり、今後のアップデートで公式による解消が期待されます。
 
-エイリアスを`@types`のような名前を設定すると、TypeScriptがそれをnpmパッケージの`@types`と誤認識し、以下のようなエラーが発生する場合があります。
-
-```bash
-Cannot find module '@types/...' or its corresponding type declarations.
-```
-
-この問題を回避するためには、エイリアス名を`@/`から始めるように設定するのがおすすめです。たとえば、`@/types`や`@/assets`のように命名すれば、衝突を防ぐことができます。
+現時点ではこの方法を利用しつつ、公式の修正を待つことにしました。
 
 ## まとめ
 
-Astroでimportエイリアスを設定する際は、以下のポイントを押さえましょう。
+Astroでimportエイリアスを設定する際のポイントと、CSSの`url()`におけるパス解決問題への対処方法を紹介しました。
 
-1. `tsconfig.json`で`@/*`形式のエイリアスを設定。
-2. `astro.config.mjs`でViteのエイリアスを設定し、CSSやSassでも利用可能に。
-3. `@/types`のような形式にすることでnpmパッケージとの衝突を避ける。
+1. `tsconfig.json`の`compilerOptions`にimportエイリアスを設定。
+2. CSSの`url()`問題を回避するには、`astro.config.mjs`でViteのエイリアス設定を追加する。
 
-これらの設定により、JavaScript/TypeScriptとCSSの両方で統一的なエイリアスが利用でき、開発効率が向上します。ぜひプロジェクトに導入してみてください！
+これらを参考に、エイリアスを活用して効率的なプロジェクト運用を目指してください！
 
 ## PR
 
